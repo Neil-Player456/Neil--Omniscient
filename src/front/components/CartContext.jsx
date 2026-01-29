@@ -5,7 +5,7 @@ export const CartContext = createContext();
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
 
-  // Add item to cart
+  
   const addToCart = (item) => {
     setCartItems(prevItems => {
       const existingItem = prevItems.find(i => i.id === item.id);
@@ -18,7 +18,7 @@ export const CartProvider = ({ children }) => {
     });
   };
 
-  // Remove item from cart
+  
   const removeFromCart = (itemId) => {
     setCartItems(prevItems => prevItems.filter(i => i.id !== itemId));
   };

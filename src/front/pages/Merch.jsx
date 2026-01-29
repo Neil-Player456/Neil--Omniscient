@@ -86,7 +86,6 @@ export const Merch = () => {
           </h1>
         </div>
 
-        {/* Vintage Videos */}
         <section className="mb-5">
           <h2 className="h4 fw-semibold mb-4 text-center">
             <span className="display-4 fw-bold">
@@ -117,7 +116,6 @@ export const Merch = () => {
           )}
         </section>
 
-        {/* Modern Videos */}
         <section>
           <h2 className="h4 fw-semibold mb-4 text-center">
             <span className="display-4 fw-bold">

@@ -15,9 +15,8 @@ export const signup = async (dispatch, payload) => {
       return false;
     }
 
-    // Signup success
+    
     const data = await response.json();
-    // Optionally dispatch user or token here if backend returns them
     return true;
   } catch (error) {
     console.error("Network or fetch error:", error);
@@ -78,9 +77,8 @@ export const getUser = async (dispatch, payload) => {
 };
 
 export const getVintageGames = async (dispatch, payload) => {
-  // Use the passed payload for limit and offset instead of hardcoding
   const { limit = 500, offset = 0 } = payload || {};
-
+  
   let response = await fetch(import.meta.env.VITE_BACKEND_URL + "/retrogames", {
     method: "POST",
     headers: {
@@ -99,7 +97,7 @@ export const getVintageGames = async (dispatch, payload) => {
     payload: data,
   });
 
-  return data; // Return the data so caller can use it
+  return data; 
 };
 
 export const getRawgGames = async (dispatch, payload) => {

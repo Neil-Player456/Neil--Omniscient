@@ -195,7 +195,6 @@ export const Games = () => {
 </div>
 
 
-      {/* Remove maxWidth limit, full width row */}
       <div className="row w-100 px-3 px-md-5">
         {gamesWithDescriptions.map((rawgGame, index) => {
           const isLast = index === gamesWithDescriptions.length - 1;

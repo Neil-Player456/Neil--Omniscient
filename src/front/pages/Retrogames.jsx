@@ -35,7 +35,6 @@ export const RetroGames = () => {
         minHeight: "100vh",
       }}
     >
-      {/* Header with centered title and fixed-position search bar */}
       <div
         className="position-relative d-flex align-items-center justify-content-center"
         style={{
@@ -76,7 +75,6 @@ export const RetroGames = () => {
         />
       </div>
 
-      {/* Game Cards */}
       <div className="row px-3">
         {filteredGames.length > 0 ? (
           filteredGames.map((vintageGames, index) => (

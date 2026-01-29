@@ -11,18 +11,37 @@ import requests
 
 
 
+
 api = Blueprint('api', __name__)
-
-
 CORS(api)
 
-
 CLIENT_ID = "2r3wcled8ugszufen3r4r2makgitqq"
-ACCESS_TOKEN = "x3du3wpyr1fvn0jmmrtyzsq6sek9w0"
+CLIENT_SECRET = "j518b3kme8d7lmw8yr6mfwa26n6wxq"  
 
+
+def get_igdb_token():
+    url = "https://id.twitch.tv/oauth2/token"
+    payload = {
+        "client_id": CLIENT_ID,
+        "client_secret": CLIENT_SECRET,
+        "grant_type": "client_credentials"
+    }
+    try:
+        r = requests.post(url, data=payload)
+        r.raise_for_status()
+        token = r.json()["access_token"]
+        print("✅ IGDB token refreshed")
+        return token
+    except Exception as e:
+        print("❌ Failed to get IGDB token:", e)
+        return None
+
+
+ACCESS_TOKEN = get_igdb_token()
 
 @api.route('/retrogames', methods=['GET', 'POST'])
 def get_vintage_games():
+    global ACCESS_TOKEN
     if request.method == 'POST':
         payload = request.get_json() or {}
     else:
@@ -33,6 +52,12 @@ def get_vintage_games():
         offset = int(payload.get('offset', 0))
     except ValueError:
         return jsonify({"error": "limit and offset must be integers"}), 400
+
+    
+    if not ACCESS_TOKEN:
+        ACCESS_TOKEN = get_igdb_token()
+        if not ACCESS_TOKEN:
+            return jsonify({"error": "Failed to get IGDB token"}), 500
 
     headers = {
         "Client-ID": CLIENT_ID,
@@ -63,12 +88,22 @@ def get_vintage_games():
         data=igdb_query
     )
 
+    # auto-refresh token if 401
+    if response.status_code == 401:
+        print("⚠️ IGDB token expired, refreshing...")
+        ACCESS_TOKEN = get_igdb_token()
+        headers["Authorization"] = f"Bearer {ACCESS_TOKEN}"
+        response = requests.post(
+            "https://api.igdb.com/v4/games",
+            headers=headers,
+            data=igdb_query
+        )
+
     if response.status_code != 200:
-        return jsonify({"error": "Failed to fetch games from IGDB"}), response.status_code
+        return jsonify({"error": "Failed to fetch games from IGDB", "details": response.text}), response.status_code
 
     games = response.json()
 
-    # Manually attach YouTube trailers
     youtube_links = {
         "Super Mario Bros.": "https://www.youtube.com/embed/KM8Y4wqXFz4",
         "Sonic the Hedgehog": "https://www.youtube.com/embed/CwYNFlsLTs0",
@@ -79,154 +114,6 @@ def get_vintage_games():
 
     for game in games:
         name = game.get("name")
-        if name in youtube_links:
-            game["gameplay_url"] = youtube_links[name]
-        else:
-            game["gameplay_url"] = None
+        game["gameplay_url"] = youtube_links.get(name)
 
     return jsonify(games), 200
-
-
-
-
-@api.route('/signup', methods=['POST'])
-def handle_signup():
-    body = request.get_json()
-    body_email = body['email']
-    body_password = hashlib.sha256(
-        body['password'].encode("utf-8")).hexdigest()
-    user = User(email=body_email, password=body_password, is_active=True)
-
-    db.session.add(user)
-    db.session.commit()
-
-    return jsonify("User created"), 200
-
-
-@api.route('/login', methods=['POST'])
-def handle_login():
-    body = request.get_json()
-    body_email = body['email']
-    body_password = hashlib.sha256(
-        body['password'].encode("utf-8")).hexdigest()
-    user = User.query.filter_by(email=body_email).first()
-    if user and user.password == body_password:
-        access_token = create_access_token(identity=user.email)
-        return jsonify(user=user.serialize(), access_token=access_token)
-    else:
-        return jsonify("user not found")
-
-
-@api.route('/profile', methods=['GET'])
-@jwt_required()
-def get_user():
-    user_email = get_jwt_identity()
-    user = User.query.filter_by(email=user_email).first()
-
-    return jsonify(user=user.serialize()), 200
-
-
-@api.route("/user", methods=["GET"])
-@jwt_required()
-def get_user_by_id():
-    user_email = get_jwt_identity()
-    user = User.query.filter_by(email=user_email).first()
-
-    if not user:
-        return jsonify({"error": "User not found"}), 404
-        
-    access_token = create_access_token(identity=user.email)
-    return jsonify(user=user.serialize(), access_token=access_token), 200
-
-
-@api.route('/profile', methods=['PUT'])
-@jwt_required()
-def update_about():
-    user_email = get_jwt_identity()
-    user = User.query.filter_by(email=user_email).first()
-
-    if not user:
-        return jsonify({"error": "User not found"}), 404
-
-    data = request.get_json()
-
-    if 'about' in data:
-        user.about = data['about']
-
-    db.session.commit()
-
-    return jsonify({"message": "Profile updated", "user": user.serialize()}), 200
-
-
-@api.route('/saved-games', methods=['PUT'])
-@jwt_required()
-def save_game():
-    user_email = get_jwt_identity()
-    user = User.query.filter_by(email=user_email).first()
-    if not user:
-        return jsonify({"error": "User not found"}), 404
-    data = request.get_json()
-    if not data:
-        return jsonify({"error": "No game data provided"}), 400
-    if user.saved_games is None:
-        user.saved_games = []
-    saved_games = user.saved_games.copy() if user.saved_games else []
-    game_exists = any(
-        game.get('name') == data.get('name') or
-        game.get('id') == data.get('id')
-        for game in saved_games
-    )
-    if game_exists:
-        return jsonify({"message": "Game already saved", "saved_games": saved_games}), 200
-    saved_games.append(data)
-    user.saved_games = saved_games
-    from sqlalchemy.orm.attributes import flag_modified
-    flag_modified(user, 'saved_games')
-    try:
-        db.session.commit()
-        return jsonify({"message": "Game saved", "saved_games": user.saved_games}), 200
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": f"Failed to save game: {str(e)}"}), 500
-    
-    
-@api.route('/saved-games', methods=['GET'])
-@jwt_required()
-def get_saved_games():
-    user_email = get_jwt_identity()
-    user = User.query.filter_by(email=user_email).first()
-    if not user:
-        return jsonify({"error": "User not found"}), 404
-    return jsonify(user.saved_games or []), 200
-
-
-@api.route('/saved-games', methods=['DELETE'])
-@jwt_required()
-def delete_saved_game():
-    user_email = get_jwt_identity()
-    user = User.query.filter_by(email=user_email).first()
-    if not user:
-        return jsonify({"error": "User not found"}), 404
-    data = request.get_json()
-    game_identifier = data.get("game_id") or data.get("name")
-    if not game_identifier:
-        return jsonify({"error": "Missing game identifier (game_id or name)"}), 400
-    if not user.saved_games:
-        return jsonify({"error": "No saved games found"}), 404
-    saved_games = user.saved_games.copy()
-    original_length = len(saved_games)
-    saved_games = [
-        game for game in saved_games
-        if game.get('id') != game_identifier and game.get('name') != game_identifier
-    ]
-    if len(saved_games) == original_length:
-        return jsonify({"error": "Game not found in saved games"}), 404
-    user.saved_games = saved_games
-    from sqlalchemy.orm.attributes import flag_modified
-    flag_modified(user, 'saved_games')
-    try:
-        db.session.commit()
-        return jsonify({"message": "Game removed", "saved_games": user.saved_games}), 200
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": f"Failed to remove game: {str(e)}"}), 500

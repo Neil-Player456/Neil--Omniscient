@@ -31,7 +31,6 @@ export const Profile = () => {
   }, [store.user]);
 
   useEffect(() => {
-    // console.log("Checking auth", store.access_token, store.user);
     if (!store.access_token || !store.user) {
       console.log("Redirecting to /must-login");
       navigate("/must-login");

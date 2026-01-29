@@ -7,12 +7,11 @@ export const RawgGameCard = (props) => {
   const [ isSaving, setIsSaving ] = useState(false)
   const [ saveMessage, setSaveMessage ] = useState("")
 
-  // Use localStorage keys unique per game UID to persist likes/dislikes
+  
   const likesKey = `likes_${props.uid}`;
   const dislikesKey = `dislikes_${props.uid}`;
 
   const [likes, setLikes] = useState(() => {
-    // Load from localStorage or start at 0
     return Number(localStorage.getItem(likesKey)) || 0;
   });
 
@@ -20,36 +19,30 @@ export const RawgGameCard = (props) => {
     return Number(localStorage.getItem(dislikesKey)) || 0;
   });
  
-  // Whenever likes change, save to localStorage
   useEffect(() => {
     localStorage.setItem(likesKey, likes);
   }, [likes, likesKey]);
 
-  // Whenever dislikes change, save to localStorage
   useEffect(() => {
     localStorage.setItem(dislikesKey, dislikes);
   }, [dislikes, dislikesKey]);
 
 
   const handleSaveForLater = async () => {
-    // console.log("Saving for later:", props.name);
     setIsSaving(true);
     setSaveMessage('');
-    // Prepare game data for the backend
     const gameData = {
       id: props.uid,
       name: props.name,
       uid: props.uid,
       img: props.img,
       summary: props.summary,
-      // Add any other props you want to save
       cover: props.img ? { url: props.img } : null,
     };
     try {
       const result = await saveGameForLater(gameData);
       if (result && result.success) {
         setSaveMessage('Saved!');
-        // Also dispatch to local state for immediate UI update
         dispatch({
           type: "save_for_later",
           payload: gameData,
@@ -60,14 +53,12 @@ export const RawgGameCard = (props) => {
     } catch (error) {
       console.error('Error saving game:', error);
       setSaveMessage('Error saving');
-      // Fallback to local state only
       dispatch({
         type: "save_for_later",
         payload: gameData,
       });
     } finally {
       setIsSaving(false);
-      // Clear message after 2 seconds
       setTimeout(() => setSaveMessage(''), 2000);
     }
   };
