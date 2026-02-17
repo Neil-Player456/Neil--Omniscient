@@ -1,4 +1,3 @@
-
 import {
   createBrowserRouter,
   createRoutesFromElements,
@@ -23,8 +22,8 @@ import { RetroGameDetails } from "./pages/RetroGameDetail";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
-      <Route path="/" element={<Layout />} errorElement={<h1>Not found!</h1>} >
-        <Route path= "/" element={<Home />} />
+      <Route path="/" element={<Layout />} errorElement={<h1>Not found!</h1>}>
+        <Route index element={<Home />} />
         <Route path="/single/:theId" element={ <Single />} />  {/* Dynamic route for single items */}
         <Route path="/demo" element={<Demo />} />
         <Route path="/games" element={<Games />} />

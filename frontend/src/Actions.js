@@ -65,64 +65,119 @@ export const logout = (dispatch) => {
 };
 
 export const getUser = async (dispatch, payload) => {
-  //   // let response = await fetch(import.meta.env.VITE_BACKEND_URL + "/profile", {
-  //   //   method: "Get",
-  //   //   headers: { Authorization: "Bearer " + payload },
-  //   // });
-  //   // let data = await response.json();
-  //   // dispatch({
-  //   //   type: "set_user",
-  //   //   payload: { user: data.user, access_token: payload },
-  //   // });
+  // TODO: Implement getUser functionality
+  // let response = await fetch(import.meta.env.VITE_BACKEND_URL + "/profile", {
+  //   method: "GET",
+  //   headers: { Authorization: "Bearer " + payload },
+  // });
+  // let data = await response.json();
+  // dispatch({
+  //   type: "set_user",
+  //   payload: { user: data.user, access_token: payload },
+  // });
+  return null;
 };
 
 export const getVintageGames = async (dispatch, payload) => {
   const { limit = 500, offset = 0 } = payload || {};
   
-  let response = await fetch(import.meta.env.VITE_BACKEND_URL + "/retrogames", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      limit,
-      offset,
-    }),
-  });
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  if (!backendUrl) {
+    console.error("VITE_BACKEND_URL is not set!");
+    return;
+  }
+  
 
-  let data = await response.json();
-
-  dispatch({
-    type: "add_vintageGames",
-    payload: data,
-  });
-
-  return data; 
-};
-
-export const getRawgGames = async (dispatch, payload) => {
-  let response = await fetch(
-    "https://api.rawg.io/api/games?key=e09cf7c5817241ee825687b3373f921f",
-    {
-      method: "GET",
+  const url = `${backendUrl}/retrogames`;
+  console.log("Fetching from:", url);
+  
+  try {
+    let response = await fetch(url, {
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
+      body: JSON.stringify({
+        limit,
+        offset,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
-  );
 
-  let data = await response.json();
+    let data = await response.json();
 
-  dispatch({
-    type: "add_RawgGames",
-    payload: data.results,
-  });
+    dispatch({
+      type: "add_vintageGames",
+      payload: data,
+    });
+
+    return data;
+  } catch (error) {
+    console.error("Error fetching vintage games:", error);
+    console.error("Backend URL:", backendUrl);
+    console.error("Full URL:", url);
+    // Return empty array on error so the app doesn't crash
+    dispatch({
+      type: "add_vintageGames",
+      payload: [],
+    });
+    return [];
+  }
+};
+
+export const getRawgGames = async (dispatch, payload) => {
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:3001/api';
+  try {
+    let response = await fetch(
+      `${backendUrl}/rawg/games`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      let errorData = {};
+      try {
+        errorData = await response.json();
+        console.error("Backend error response:", JSON.stringify(errorData, null, 2));
+      } catch (e) {
+        const text = await response.text();
+        console.error("Backend error (non-JSON):", text);
+        errorData = { error: text || response.statusText };
+      }
+      throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.error || errorData.message || response.statusText}`);
+    }
+
+    let data = await response.json();
+
+    dispatch({
+      type: "add_RawgGames",
+      payload: data.results,
+    });
+  } catch (error) {
+    console.error("Error fetching RAWG games:", error);
+    // Dispatch empty array on error so the app doesn't crash
+    dispatch({
+      type: "add_RawgGames",
+      payload: [],
+    });
+  }
 };
 
 export const getGameDescription = async (slug) => {
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:3001/api';
   const response = await fetch(
-    `https://api.rawg.io/api/games/${slug}?key=e09cf7c5817241ee825687b3373f921f`
+    `${backendUrl}/rawg/games/${slug}`
   );
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
   const data = await response.json();
   return {
     slug: slug,
