@@ -14,11 +14,21 @@ export const Games = () => {
 
   const observer = useRef();
 
+  // Helper function to get normalized backend URL
+  const getBackendUrl = () => {
+    let backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:3001/api';
+    // Ensure backendUrl ends with /api
+    if (!backendUrl.endsWith('/api')) {
+      backendUrl = backendUrl.endsWith('/') ? `${backendUrl}api` : `${backendUrl}/api`;
+    }
+    return backendUrl;
+  };
+
   const fetchGames = async (pageNum) => {
     if (loading) return;
     setLoading(true);
     try {
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:3001/api';
+      const backendUrl = getBackendUrl();
       const res = await fetch(
         `${backendUrl}/rawg/games?page=${pageNum}&page_size=20`
       );
@@ -47,7 +57,7 @@ export const Games = () => {
   };
 
   const enrichGamesWithDescriptions = async (gamesToEnrich) => {
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:3001/api';
+    const backendUrl = getBackendUrl();
     return await Promise.all(
       gamesToEnrich.map(async (game) => {
         try {
@@ -98,7 +108,7 @@ export const Games = () => {
   const fetchSearchedGames = async (query) => {
     setLoading(true);
     try {
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:3001/api';
+      const backendUrl = getBackendUrl();
       const res = await fetch(
         `${backendUrl}/rawg/games?search=${query}&page_size=20`
       );

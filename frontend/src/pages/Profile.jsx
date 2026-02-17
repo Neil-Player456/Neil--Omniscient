@@ -11,12 +11,12 @@ export const Profile = () => {
   const [about, setAbout] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
+  const hasAttemptedFetchRef = React.useRef(false);
+  const initialUserIdRef = React.useRef(store.user?.id);
+  const userWasValidatedRef = React.useRef(false);
 
-  useEffect(() => {
-    if (theId && !store.user) {
-      getUserById(theId);
-    }
-  }, [theId, store.user]);
+  // Note: Token validation is handled globally in Layout.jsx
+  // We track if user was set after mount (via validation) vs from initialStore
 
   useEffect(() => {
     if (store.user?.about !== undefined) {
@@ -24,11 +24,61 @@ export const Profile = () => {
     }
   }, [store.user?.about]);
 
+  // Track when user is set/updated after mount (indicating validation completed)
   useEffect(() => {
-    if (store.user && store.user.id) {
-      getSavedGames(store.user.id);
+    const currentUserId = store.user?.id;
+    const initialUserId = initialUserIdRef.current;
+    
+    // If user ID changed from initial state, validation has completed
+    if (currentUserId !== initialUserId) {
+      userWasValidatedRef.current = true;
+      // Reset fetch attempt when user changes
+      hasAttemptedFetchRef.current = false;
     }
-  }, [store.user]);
+    
+    // If user was cleared (validation failed), mark as validated so we don't wait forever
+    if (initialUserId && !currentUserId) {
+      userWasValidatedRef.current = true;
+    }
+    
+    // If no initial user existed, mark as validated after a short delay
+    // (allows time for Layout.jsx to validate token if it exists)
+    if (!initialUserId) {
+      const timeoutId = setTimeout(() => {
+        userWasValidatedRef.current = true;
+      }, 500);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [store.user?.id]);
+
+  // Fetch saved games only after we have a validated user
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    
+    // Don't fetch saved games if:
+    // - We've already attempted to fetch for this user (prevent duplicates)
+    // - We don't have a token or user
+    // - User doesn't have an id
+    // - Token in localStorage doesn't match store (was cleared)
+    // - User hasn't been validated yet (still from initialStore)
+    if (hasAttemptedFetchRef.current) {
+      return;
+    }
+    
+    // If we had an initial user, wait for validation to complete
+    // (userWasValidatedRef will be true after getUserById completes)
+    if (initialUserIdRef.current && !userWasValidatedRef.current) {
+      return; // Still waiting for validation
+    }
+    
+    if (!token || !store.access_token || !store.user || !store.user.id || token !== store.access_token) {
+      return;
+    }
+    
+    // Only fetch if validation has completed (or no initial user existed)
+    hasAttemptedFetchRef.current = true;
+    getSavedGames();
+  }, [store.user?.id, store.access_token]); // Wait for user to be loaded/validated
 
   useEffect(() => {
     if (!store.access_token || !store.user) {
