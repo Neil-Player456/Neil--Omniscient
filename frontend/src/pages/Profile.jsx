@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import projectimage1 from "../../img/projectimage1.png";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
+import { getBackendUrl } from "../Actions.js";
 
 export const Profile = () => {
   const navigate = useNavigate();
@@ -94,8 +95,9 @@ export const Profile = () => {
     const token = localStorage.getItem("access_token");
 
     try {
+      const backendUrl = getBackendUrl();
       const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/api/profile`,
+        `${backendUrl}/profile`,
         {
           method: "PUT",
           headers: {
@@ -128,8 +130,9 @@ export const Profile = () => {
   const handleDeleteAbout = async () => {
     const token = localStorage.getItem("access_token");
     try {
+      const backendUrl = getBackendUrl();
       const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/api/profile`,
+        `${backendUrl}/profile`,
         {
           method: "PUT",
           headers: {
