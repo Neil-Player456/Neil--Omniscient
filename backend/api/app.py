@@ -93,7 +93,6 @@ def handle_exception(e):
     print("="*60)
     print(error_details)
     print("="*60 + "\n")
-    # In development, return more details
     if ENV == "development":
         return jsonify({
             "error": "An error occurred", 
@@ -102,7 +101,7 @@ def handle_exception(e):
         }), 500
     return jsonify({"error": "An error occurred", "message": str(e)}), 500
 
-# Add request logging
+
 @app.before_request
 def log_request_info():
     import logging
@@ -113,7 +112,6 @@ def log_request_info():
         try:
             logger.info(f"Body: {request.get_json()}")
         except Exception:
-            # Ignore JSON decode errors in logging
             pass
 
 @app.after_request
