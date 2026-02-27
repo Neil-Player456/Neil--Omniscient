@@ -1,8 +1,15 @@
 export const getBackendUrl = () => {
-  let backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:3001/api';
+  let backendUrl =
+    import.meta.env.NEXT_PUBLIC_API_URL ||
+    import.meta.env.VITE_BACKEND_URL ||
+    'http://127.0.0.1:3001';
+
   if (!backendUrl.endsWith('/api')) {
-    backendUrl = backendUrl.endsWith('/') ? `${backendUrl}api` : `${backendUrl}/api`;
+    backendUrl = backendUrl.endsWith('/')
+      ? `${backendUrl}api`
+      : `${backendUrl}/api`;
   }
+
   return backendUrl;
 };
 
