@@ -117,6 +117,10 @@ RAWG_BASE_URL = 'https://api.rawg.io/api'
 @api.route('/retrogames', methods=['POST'])
 def get_retro_games():
     try:
+        if not RAWG_API_KEY:
+            print("Warning: RAWG_API_KEY not set. Returning empty results.")
+            return jsonify([]), 200
+        
         data = request.get_json() or {}
         limit = data.get('limit', 40)
         offset = data.get('offset', 0)
@@ -131,49 +135,91 @@ def get_retro_games():
             "ordering": "-rating"
         }
 
-        response = requests.get(url, params=params)
+        response = requests.get(url, params=params, timeout=10)
 
         if response.status_code == 200:
             results = response.json().get("results", [])
             return jsonify(results), 200
         else:
-            return jsonify({"error": response.text}), response.status_code
+            # Log error but return empty results instead of forwarding error status
+            error_detail = f"RAWG API returned {response.status_code}"
+            try:
+                error_data = response.json()
+                error_detail = error_data.get('detail', error_data.get('error', error_detail))
+            except:
+                pass
+            print(f"Warning: Failed to fetch retro games from RAWG: {error_detail}")
+            return jsonify([]), 200  # Return empty array with 200 status
 
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching retro games: {e}")
+        return jsonify([]), 200
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print(f"Unexpected error: {e}")
+        return jsonify([]), 200
 
 
 @api.route('/rawg/games', methods=['GET'])
 def get_rawg_games():
     try:
+        if not RAWG_API_KEY:
+            print("Warning: RAWG_API_KEY not set. Returning empty results.")
+            return jsonify({"results": []}), 200
+        
         url = f"{RAWG_BASE_URL}/games"
         params = {
             'key': RAWG_API_KEY,
             'page_size': 20
         }
         
-        response = requests.get(url, params=params)
+        response = requests.get(url, params=params, timeout=10)
         if response.status_code == 200:
             data = response.json()
             return jsonify({"results": data.get('results', [])}), 200
         else:
-            return jsonify({"error": "Failed to fetch games from RAWG"}), response.status_code
+            # Log error but return empty results instead of forwarding error status
+            error_detail = f"RAWG API returned {response.status_code}"
+            try:
+                error_data = response.json()
+                error_detail = error_data.get('detail', error_data.get('error', error_detail))
+            except:
+                pass
+            print(f"Warning: Failed to fetch games from RAWG: {error_detail}")
+            return jsonify({"results": []}), 200  # Return empty results with 200 status
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching RAWG games: {e}")
+        return jsonify({"results": []}), 200
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print(f"Unexpected error: {e}")
+        return jsonify({"results": []}), 200
 
 @api.route('/rawg/games/<slug>', methods=['GET'])
 def get_rawg_game_detail(slug):
     try:
+        if not RAWG_API_KEY:
+            return jsonify({"error": "RAWG API key not configured"}), 200
+        
         url = f"{RAWG_BASE_URL}/games/{slug}"
         params = {'key': RAWG_API_KEY}
         
-        response = requests.get(url, params=params)
+        response = requests.get(url, params=params, timeout=10)
         if response.status_code == 200:
             return jsonify(response.json()), 200
         else:
-            return jsonify({"error": "Game not found"}), response.status_code
+            error_detail = f"RAWG API returned {response.status_code}"
+            try:
+                error_data = response.json()
+                error_detail = error_data.get('detail', error_data.get('error', error_detail))
+            except:
+                pass
+            print(f"Warning: Failed to fetch game detail from RAWG: {error_detail}")
+            return jsonify({"error": error_detail}), 200  # Return 200 instead of forwarding error
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching RAWG game detail: {e}")
+        return jsonify({"error": str(e)}), 200
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print(f"Unexpected error: {e}")
+        return jsonify({"error": str(e)}), 200
 
 @api.route('/saved-games', methods=['GET'])
 @jwt_required()
