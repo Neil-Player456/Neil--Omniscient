@@ -186,7 +186,7 @@ export const getUserById = async (dispatch) => {
   }
 };
 
-// Alias for getUserById to maintain compatibility
+
 export const getUser = getUserById;
 
 
@@ -199,7 +199,7 @@ export const saveGameForLater = async (dispatch, game) => {
     const response = await fetch(`${backendUrl}/saved-games`, {
       method: "PUT",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ game }), // Ensure backend expects { game: {...} }
+      body: JSON.stringify({ game }),
     });
 
     const data = await response.json();
