@@ -85,7 +85,6 @@ export const logout = (dispatch) => {
   localStorage.removeItem("access_token");
   localStorage.removeItem("user");
   sessionStorage.removeItem("access_token");
-
   dispatch({ type: "logout" });
 };
 
@@ -93,11 +92,15 @@ export const getVintageGames = async (dispatch, payload) => {
   const { limit = 500, offset = 0 } = payload || {};
   const backendUrl = getBackendUrl();
   const url = `${backendUrl}/retrogames`;
+  const token = localStorage.getItem("access_token");
 
   try {
     const response = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
       body: JSON.stringify({ limit, offset }),
     });
 
@@ -107,14 +110,7 @@ export const getVintageGames = async (dispatch, payload) => {
     dispatch({ type: "add_vintageGames", payload: data });
     return data;
   } catch (error) {
-    const isNetworkError = error.message?.includes("Failed to fetch") || 
-                          error.message?.includes("NetworkError") ||
-                          error.name === "TypeError";
-    if (isNetworkError) {
-      console.error("Error fetching vintage games: Backend server is not running. Please start it with 'pipenv run start' in the backend directory.");
-    } else {
-      console.error("Error fetching vintage games:", error);
-    }
+    console.error("Error fetching vintage games:", error);
     dispatch({ type: "add_vintageGames", payload: [] });
     return [];
   }
@@ -122,41 +118,37 @@ export const getVintageGames = async (dispatch, payload) => {
 
 export const getRawgGames = async (dispatch) => {
   const backendUrl = getBackendUrl();
+  const token = localStorage.getItem("access_token");
+
   try {
     const response = await fetch(`${backendUrl}/rawg/games`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
     });
 
     if (!response.ok) {
-      let errorData = {};
-      try {
-        errorData = await response.json();
-      } catch {
-        const text = await response.text();
-        errorData = { error: text || response.statusText };
-      }
+      const errorData = await response.json().catch(() => ({}));
       throw new Error(`HTTP ${response.status}: ${errorData.error || response.statusText}`);
     }
 
     const data = await response.json();
     dispatch({ type: "add_RawgGames", payload: data.results });
   } catch (error) {
-    const isNetworkError = error.message?.includes("Failed to fetch") || 
-                          error.message?.includes("NetworkError") ||
-                          error.name === "TypeError";
-    if (isNetworkError) {
-      console.error("Error fetching RAWG games: Backend server is not running. Please start it with 'pipenv run start' in the backend directory.");
-    } else {
-      console.error("Error fetching RAWG games:", error);
-    }
+    console.error("Error fetching RAWG games:", error);
     dispatch({ type: "add_RawgGames", payload: [] });
   }
 };
 
 export const getGameDescription = async (slug) => {
   const backendUrl = getBackendUrl();
-  const response = await fetch(`${backendUrl}/rawg/games/${slug}`);
+  const token = localStorage.getItem("access_token");
+  const response = await fetch(`${backendUrl}/rawg/games/${slug}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+
   if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
   const data = await response.json();
   return { slug, name: data.name, description: data.description_raw || data.description };
@@ -193,9 +185,7 @@ export const getUserById = async (dispatch) => {
   }
 };
 
-
 export const getUser = getUserById;
-
 
 export const saveGameForLater = async (dispatch, game) => {
   try {
@@ -233,12 +223,13 @@ export const saveGameForLater = async (dispatch, game) => {
 export const getSavedGames = async (dispatch) => {
   try {
     const token = localStorage.getItem("access_token");
+    const backendUrl = getBackendUrl();
+
     if (!token) {
       dispatch({ type: "set_saved_games", payload: [] });
       return [];
     }
 
-    const backendUrl = getBackendUrl();
     const response = await fetch(`${backendUrl}/saved-games`, {
       method: "GET",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
