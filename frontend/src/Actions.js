@@ -91,11 +91,10 @@ export const logout = (dispatch) => {
 export const getVintageGames = async (dispatch, payload) => {
   const { limit = 500, offset = 0 } = payload || {};
   const backendUrl = getBackendUrl();
-  const url = `${backendUrl}/retrogames`;
   const token = localStorage.getItem("access_token");
 
   try {
-    const response = await fetch(url, {
+    const response = await fetch(`${backendUrl}/retrogames`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -107,8 +106,17 @@ export const getVintageGames = async (dispatch, payload) => {
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     const data = await response.json();
 
-    dispatch({ type: "add_vintageGames", payload: data });
-    return data;
+    // Map each retro game to include 'uid', 'img', 'summary'
+    const mappedGames = (data || []).map(game => ({
+      uid: game.id || game.slug,
+      name: game.name,
+      img: game.background_image || "https://via.placeholder.com/640x360?text=No+Image",
+      summary: game.description_raw || game.description || "",
+      slug: game.slug
+    }));
+
+    dispatch({ type: "add_vintageGames", payload: mappedGames });
+    return mappedGames;
   } catch (error) {
     console.error("Error fetching vintage games:", error);
     dispatch({ type: "add_vintageGames", payload: [] });
