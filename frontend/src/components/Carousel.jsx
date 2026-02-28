@@ -1,11 +1,26 @@
 import React from "react";
-import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import { Link } from "react-router-dom";
 
 export const Carousel = ({ games }) => {
   if (!games || games.length === 0) {
     return <p>No games to show.</p>;
   }
+
+  const getImageSrc = (game) => {
+    // RAWG format
+    if (game.background_image) {
+      return game.background_image;
+    }
+
+    if (game.img) {
+      if (game.img.startsWith("//")) {
+        return `https:${game.img.replace("t_thumb", "t_720p")}`;
+      }
+      return game.img.replace("t_thumb", "t_720p");
+    }
+
+    return "https://t3.ftcdn.net/jpg/04/60/01/36/360_F_460013622_6xF8uN6ubMvLx0tAJECBHfKPoNOR5cRa.jpg";
+  };
 
   return (
     <div
@@ -35,28 +50,29 @@ export const Carousel = ({ games }) => {
             ></button>
           ))}
         </div>
+
         <div className="carousel-inner">
           {games.map((game, index) => (
             <div
-              key={game.uid || index}
+              key={game.uid || game.id || index}
               className={`carousel-item ${index === 0 ? "active" : ""}`}
             >
               <div className="d-flex justify-content-center">
                 <Link
-                  to={`/retrogame/${game.uid || index}`}
+                  to={`/retrogame/${game.uid || game.id || index}`}
                   className="text-decoration-none"
                 >
                   <img
-                    src={
-                      game.img?.startsWith("//")
-                        ? `https:${game.img.replace("t_thumb", "t_720p")}`
-                        : game.img?.replace("t_thumb", "t_720p")
-                    }
+                    src={getImageSrc(game)}
                     alt={game.name || "Game Image"}
-                    onError={(e) => (e.target.src = "https://t3.ftcdn.net/jpg/04/60/01/36/360_F_460013622_6xF8uN6ubMvLx0tAJECBHfKPoNOR5cRa.jpg")}
+                    onError={(e) => {
+                      e.target.onerror = null; 
+                      e.target.src =
+                        "https://t3.ftcdn.net/jpg/04/60/01/36/360_F_460013622_6xF8uN6ubMvLx0tAJECBHfKPoNOR5cRa.jpg";
+                    }}
                     className="d-block"
                     style={{
-                     maxHeight: "400px",
+                      maxHeight: "400px",
                       maxWidth: "100%",
                       width: "auto",
                       height: "auto",
@@ -67,12 +83,12 @@ export const Carousel = ({ games }) => {
 
                 <div className="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-2">
                   <h5>{game.name}</h5>
-                  {/* <p>{game.description}</p> */}
                 </div>
               </div>
             </div>
           ))}
         </div>
+
         <button
           className="carousel-control-prev"
           type="button"
@@ -85,6 +101,7 @@ export const Carousel = ({ games }) => {
           ></span>
           <span className="visually-hidden">Previous</span>
         </button>
+
         <button
           className="carousel-control-next"
           type="button"
