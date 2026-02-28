@@ -26,6 +26,7 @@ export const GameCard = (props) => {
     localStorage.setItem(dislikesKey, dislikes);
   }, [dislikes, dislikesKey]);
 
+  // ✅ Safe image resolver (RAWG + IGDB support)
   const getImageSrc = () => {
     if (props.background_image) {
       return props.background_image;
@@ -45,19 +46,20 @@ export const GameCard = (props) => {
     setIsSaving(true);
     setSaveMessage("");
 
+    const imageUrl = props.background_image || props.img || null;
+
     const gameData = {
       id: props.uid,
       name: props.name,
       uid: props.uid,
-      img: props.background_image || props.img,
+      img: imageUrl,
       summary: props.summary,
-      cover: props.background_image || props.img
-        ? { url: props.background_image || props.img }
-        : null,
+      cover: imageUrl ? { url: imageUrl } : null,
     };
 
     try {
       const result = await saveGameForLater(gameData);
+
       if (result && result.success) {
         setSaveMessage("Saved!");
         dispatch({
@@ -107,7 +109,7 @@ export const GameCard = (props) => {
           <img
             src={getImageSrc()}
             className="card-img-top"
-            alt="gameImage"
+            alt={props.name || "Game Image"}
             onError={(e) => {
               e.target.onerror = null;
               e.target.src =
@@ -140,9 +142,7 @@ export const GameCard = (props) => {
           </button>
 
           <button
-            className={`btn ${
-              isGameSaved ? "btn-success" : "btn-primary"
-            }`}
+            className={`btn ${isGameSaved ? "btn-success" : "btn-primary"}`}
             onClick={handleSaveForLater}
             disabled={isSaving}
             title={isGameSaved ? "Already saved" : "Save for later"}
