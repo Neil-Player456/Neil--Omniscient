@@ -1,9 +1,12 @@
 export const getBackendUrl = () => {
   let backendUrl =
-    import.meta.env.NEXT_PUBLIC_API_URL ||
     import.meta.env.VITE_BACKEND_URL ||
-    'http://127.0.0.1:3001';
+    import.meta.env.NEXT_PUBLIC_API_URL ||
+    (import.meta.env.PROD 
+      ? 'https://omniscient-srgi.onrender.com/api'  // Production backend URL
+      : 'http://127.0.0.1:3001/api');  // Local development
 
+  // Ensure it ends with /api
   if (!backendUrl.endsWith('/api')) {
     backendUrl = backendUrl.endsWith('/')
       ? `${backendUrl}api`
@@ -106,7 +109,7 @@ export const getVintageGames = async (dispatch, payload) => {
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     const data = await response.json();
 
-    // Map each retro game to include 'uid', 'img', 'summary'
+   
     const mappedGames = (data || []).map(game => ({
       uid: game.id || game.slug,
       name: game.name,
