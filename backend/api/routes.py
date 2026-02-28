@@ -114,16 +114,19 @@ RAWG_BASE_URL = 'https://api.rawg.io/api'
 
 
 
-@api.route('/retrogames', methods=['POST'])
+@api.route('/retrogames', methods=['GET', 'POST'])
 def get_retro_games():
     try:
         if not RAWG_API_KEY:
             print("Warning: RAWG_API_KEY not set. Returning empty results.")
             return jsonify([]), 200
-        
+
         data = request.get_json() or {}
-        limit = data.get('limit', 40)
-        offset = data.get('offset', 0)
+        limit = data.get('limit', request.args.get('limit', 40))
+        offset = data.get('offset', request.args.get('offset', 0))
+
+        limit = int(limit)
+        offset = int(offset)
 
         url = f"{RAWG_BASE_URL}/games"
 
@@ -141,7 +144,6 @@ def get_retro_games():
             results = response.json().get("results", [])
             return jsonify(results), 200
         else:
-            # Log error but return empty results instead of forwarding error status
             error_detail = f"RAWG API returned {response.status_code}"
             try:
                 error_data = response.json()
@@ -149,13 +151,13 @@ def get_retro_games():
             except:
                 pass
             print(f"Warning: Failed to fetch retro games from RAWG: {error_detail}")
-            return jsonify([]), 200  # Return empty array with 200 status
+            return jsonify([]), 200
 
     except requests.exceptions.RequestException as e:
         print(f"Error fetching retro games: {e}")
         return jsonify([]), 200
     except Exception as e:
-        print(f"Unexpected error: {e}")
+        print(f"Unexpected error in /retrogames: {e}")
         return jsonify([]), 200
 
 
@@ -177,7 +179,6 @@ def get_rawg_games():
             data = response.json()
             return jsonify({"results": data.get('results', [])}), 200
         else:
-            # Log error but return empty results instead of forwarding error status
             error_detail = f"RAWG API returned {response.status_code}"
             try:
                 error_data = response.json()
