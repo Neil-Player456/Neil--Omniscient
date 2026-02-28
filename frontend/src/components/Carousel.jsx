@@ -7,18 +7,7 @@ export const Carousel = ({ games }) => {
   }
 
   const getImageSrc = (game) => {
-    if (game.background_image) {
-      return game.background_image;
-    }
-
-    if (game.img) {
-      if (game.img.startsWith("//")) {
-        return `https:${game.img.replace("t_thumb", "t_720p")}`;
-      }
-      return game.img.replace("t_thumb", "t_720p");
-    }
-
-    return "https://t3.ftcdn.net/jpg/04/60/01/36/360_F_460013622_6xF8uN6ubMvLx0tAJECBHfKPoNOR5cRa.jpg";
+    return game.background_image || game.img || "https://t3.ftcdn.net/jpg/04/60/01/36/360_F_460013622_6xF8uN6ubMvLx0tAJECBHfKPoNOR5cRa.jpg";
   };
 
   return (
@@ -69,10 +58,7 @@ export const Carousel = ({ games }) => {
                       "https://t3.ftcdn.net/jpg/04/60/01/36/360_F_460013622_6xF8uN6ubMvLx0tAJECBHfKPoNOR5cRa.jpg";
                   }}
                   className="d-block w-100"
-                  style={{
-                    height: "400px",
-                    objectFit: "cover",
-                  }}
+                  style={{ height: "400px", objectFit: "cover" }}
                 />
 
                 <div className="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-2">
@@ -89,10 +75,7 @@ export const Carousel = ({ games }) => {
           data-bs-target="#carouselExampleIndicators"
           data-bs-slide="prev"
         >
-          <span
-            className="carousel-control-prev-icon"
-            aria-hidden="true"
-          ></span>
+          <span className="carousel-control-prev-icon" aria-hidden="true"></span>
           <span className="visually-hidden">Previous</span>
         </button>
 
@@ -102,10 +85,7 @@ export const Carousel = ({ games }) => {
           data-bs-target="#carouselExampleIndicators"
           data-bs-slide="next"
         >
-          <span
-            className="carousel-control-next-icon"
-            aria-hidden="true"
-          ></span>
+          <span className="carousel-control-next-icon" aria-hidden="true"></span>
           <span className="visually-hidden">Next</span>
         </button>
       </div>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react"; 
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import projectimage1 from "../../img/projectimage1.png";
 import { Carousel } from "../components/Carousel.jsx";
@@ -54,7 +54,7 @@ export const Home = () => {
 
       <div className="text-center mt-5">
         <Link to={"/retrogames"} className="text-decoration-none text-white">
-        <h2> Retro Games</h2>
+          <h2>Retro Games</h2>
         </Link>
       </div>
       <div className="px-3">
@@ -63,7 +63,7 @@ export const Home = () => {
             games={retroGames.map((game) => ({
               uid: game.id,
               name: game.name,
-              img: game.cover?.url ?? "",
+              img: game.background_image || game.cover?.url || "", // ✅ FIXED
             }))}
           />
         )}
@@ -71,7 +71,7 @@ export const Home = () => {
 
       <div className="text-center mt-5">
         <Link to={"/games"} className="text-decoration-none text-white">
-        <h2>Modern Games</h2>
+          <h2>Modern Games</h2>
         </Link>
       </div>
       <div className="px-3">

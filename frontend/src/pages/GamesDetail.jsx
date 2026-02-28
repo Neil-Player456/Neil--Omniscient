@@ -8,10 +8,8 @@ export const GameDetails = () => {
   const [screenshots, setScreenshots] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Helper function to get normalized backend URL
   const getBackendUrl = () => {
     let backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:3001/api';
-    // Ensure backendUrl ends with /api
     if (!backendUrl.endsWith('/api')) {
       backendUrl = backendUrl.endsWith('/') ? `${backendUrl}api` : `${backendUrl}/api`;
     }
