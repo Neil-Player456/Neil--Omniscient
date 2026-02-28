@@ -7,7 +7,6 @@ export const Carousel = ({ games }) => {
   }
 
   const getImageSrc = (game) => {
-    // RAWG format
     if (game.background_image) {
       return game.background_image;
     }
@@ -57,34 +56,29 @@ export const Carousel = ({ games }) => {
               key={game.uid || game.id || index}
               className={`carousel-item ${index === 0 ? "active" : ""}`}
             >
-              <div className="d-flex justify-content-center">
-                <Link
-                  to={`/retrogame/${game.uid || game.id || index}`}
-                  className="text-decoration-none"
-                >
-                  <img
-                    src={getImageSrc(game)}
-                    alt={game.name || "Game Image"}
-                    onError={(e) => {
-                      e.target.onerror = null; 
-                      e.target.src =
-                        "https://t3.ftcdn.net/jpg/04/60/01/36/360_F_460013622_6xF8uN6ubMvLx0tAJECBHfKPoNOR5cRa.jpg";
-                    }}
-                    className="d-block"
-                    style={{
-                      maxHeight: "400px",
-                      maxWidth: "100%",
-                      width: "auto",
-                      height: "auto",
-                      objectFit: "contain",
-                    }}
-                  />
-                </Link>
+              <Link
+                to={`/retrogame/${game.uid || game.id || index}`}
+                className="text-decoration-none"
+              >
+                <img
+                  src={getImageSrc(game)}
+                  alt={game.name || "Game Image"}
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src =
+                      "https://t3.ftcdn.net/jpg/04/60/01/36/360_F_460013622_6xF8uN6ubMvLx0tAJECBHfKPoNOR5cRa.jpg";
+                  }}
+                  className="d-block w-100"
+                  style={{
+                    height: "400px",
+                    objectFit: "cover",
+                  }}
+                />
 
                 <div className="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-2">
                   <h5>{game.name}</h5>
                 </div>
-              </div>
+              </Link>
             </div>
           ))}
         </div>
