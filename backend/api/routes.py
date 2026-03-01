@@ -292,7 +292,7 @@ def remove_saved_game():
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
-        @api.route('/retrogames/<slug>', methods=['GET'])
+@api.route('/retrogames/<slug>', methods=['GET'])
 def get_retro_game_detail(slug):
     try:
         if not RAWG_API_KEY:
@@ -312,7 +312,9 @@ def get_retro_game_detail(slug):
         print(f"Retro detail error: {e}")
         return jsonify({"error": str(e)}), 500
 
-        @api.route('/retrogames/<int:game_id>/screenshots', methods=['GET'])
+
+# Retro game screenshots endpoint
+@api.route('/retrogames/<int:game_id>/screenshots', methods=['GET'])
 def get_retro_game_screenshots(game_id):
     try:
         if not RAWG_API_KEY:
