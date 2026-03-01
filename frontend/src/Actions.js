@@ -111,6 +111,7 @@ export const getVintageGames = async (dispatch, payload) => {
 
    
     const mappedGames = (data || []).map(game => ({
+      id: game.id,
       uid: game.id || game.slug,
       name: game.name,
       img: game.background_image || "https://via.placeholder.com/640x360?text=No+Image",
