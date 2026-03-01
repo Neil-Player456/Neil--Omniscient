@@ -1,27 +1,54 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import useGlobalReducer from "../hooks/useGlobalReducer";
 import projectimage1 from "../../img/projectimage1.png";
 
 export const RetroGameDetails = () => {
-  const { uid } = useParams();
-  const { store } = useGlobalReducer();
+  const { uid } = useParams(); // uid will be used as slug
+  const [game, setGame] = useState(null);
+  const [screenshots, setScreenshots] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const game = store.vintageGames?.find((g) => g.id.toString() === uid);
+  const getBackendUrl = () => {
+    let backendUrl =
+      import.meta.env.VITE_BACKEND_URL || "http://127.0.0.1:3001/api";
+    if (!backendUrl.endsWith("/api")) {
+      backendUrl = backendUrl.endsWith("/") ? `${backendUrl}api` : `${backendUrl}/api`;
+    }
+    return backendUrl;
+  };
 
-  if (!game) {
-    return <p className="text-white text-center mt-5">Game not found</p>;
-  }
+  useEffect(() => {
+    const fetchRetroGameDetails = async () => {
+      try {
+        const backendUrl = getBackendUrl();
 
-  const releaseDate = game.first_release_date
-    ? new Date(game.first_release_date * 1000).toLocaleDateString()
-    : "Unknown";
+        // Fetch game details
+        const res = await fetch(`${backendUrl}/retrogames/${uid}`);
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        const gameData = await res.json();
+        setGame(gameData);
 
-  const coverUrl = game.cover?.url
-    ? game.cover.url.startsWith("http")
-      ? game.cover.url.replace("t_thumb", "t_cover_big")
-      : `https:${game.cover.url.replace("t_thumb", "t_cover_big")}`
-    : null;
+        // Fetch screenshots
+        if (gameData.id) {
+          const screenshotsRes = await fetch(
+            `${backendUrl}/retrogames/${gameData.id}/screenshots`
+          );
+          if (!screenshotsRes.ok) throw new Error(`HTTP error! status: ${screenshotsRes.status}`);
+          const screenshotsData = await screenshotsRes.json();
+          setScreenshots(screenshotsData.results || []);
+        }
+      } catch (error) {
+        console.error("Error fetching retro game details:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRetroGameDetails();
+  }, [uid]);
+
+  if (loading) return <div className="text-white text-center mt-5">Loading...</div>;
+  if (!game) return <div className="text-white text-center mt-5">Game not found</div>;
 
   const backgroundBox = {
     backgroundColor: "rgba(0, 0, 0, 0.65)",
@@ -33,7 +60,7 @@ export const RetroGameDetails = () => {
 
   return (
     <div
-      className="text-center container-fluid"
+      className="main"
       style={{
         backgroundImage: `url(${projectimage1})`,
         backgroundSize: "cover",
@@ -50,12 +77,12 @@ export const RetroGameDetails = () => {
           <h2>{game.name}</h2>
         </div>
 
-        {coverUrl && (
+        {game.background_image && (
           <img
-            src={coverUrl}
+            src={game.background_image}
             alt={game.name}
             style={{
-              width: "30%",
+              width: "100%",
               maxWidth: "600px",
               height: "auto",
               borderRadius: "1rem",
@@ -65,7 +92,7 @@ export const RetroGameDetails = () => {
         )}
 
         <div style={backgroundBox}>
-          <p>{game.summary}</p>
+          <p>{game.description_raw}</p>
         </div>
 
         <div
@@ -79,7 +106,7 @@ export const RetroGameDetails = () => {
         >
           <div style={backgroundBox}>
             <strong style={{ color: "#0ff" }}>Release Date:</strong>{" "}
-            <em>{releaseDate}</em>
+            <em>{game.released || "Unknown"}</em>
           </div>
 
           {game.genres?.length > 0 && (
@@ -109,8 +136,7 @@ export const RetroGameDetails = () => {
           {game.involved_companies?.length > 0 && (
             <div style={backgroundBox}>
               <strong style={{ color: "#0ff" }}>Developer:</strong>{" "}
-              {game.involved_companies.find((c) => c.developer)?.company
-                ?.name || "N/A"}
+              {game.involved_companies.find((c) => c.developer)?.company?.name || "N/A"}
             </div>
           )}
 
@@ -126,39 +152,33 @@ export const RetroGameDetails = () => {
 
         <h3 className="mt-5" style={backgroundBox}>Screenshots</h3>
 
-        {game.screenshots?.length > 0 ? (
-          <div
-            className="mt-4"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-              gap: "1rem",
-            }}
-          >
-            {game.screenshots.map((shot, idx) => (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+            gap: "1rem",
+          }}
+        >
+          {screenshots.length > 0 ? (
+            screenshots.map((shot) => (
               <img
-                key={idx}
-                src={
-                  shot.url.startsWith("http")
-                    ? shot.url.replace("t_thumb", "t_screenshot_med")
-                    : `https:${shot.url.replace("t_thumb", "t_screenshot_med")}`
-                }
-                alt={`Screenshot ${idx + 1}`}
+                key={shot.id}
+                src={shot.image}
+                alt="Game screenshot"
                 style={{
                   width: "100%",
                   height: "auto",
-                  objectFit: "cover",
                   borderRadius: "1rem",
-                  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
                 }}
               />
-            ))}
-          </div>
-        ) : (
-          <div style={backgroundBox}>
-            <p>No screenshots available for this game.</p>
-          </div>
-        )}
+            ))
+          ) : (
+            <div style={backgroundBox}>
+              <p>No screenshots available for this game.</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

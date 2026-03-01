@@ -291,3 +291,43 @@ def remove_saved_game():
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
+
+        @api.route('/retrogames/<slug>', methods=['GET'])
+def get_retro_game_detail(slug):
+    try:
+        if not RAWG_API_KEY:
+            return jsonify({"error": "RAWG API key not configured"}), 500
+
+        url = f"{RAWG_BASE_URL}/games/{slug}"
+        params = {"key": RAWG_API_KEY}
+
+        response = requests.get(url, params=params, timeout=10)
+
+        if response.status_code != 200:
+            return jsonify({"error": "Failed to fetch game"}), response.status_code
+
+        return jsonify(response.json()), 200
+
+    except Exception as e:
+        print(f"Retro detail error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+        @api.route('/retrogames/<int:game_id>/screenshots', methods=['GET'])
+def get_retro_game_screenshots(game_id):
+    try:
+        if not RAWG_API_KEY:
+            return jsonify({"error": "RAWG API key not configured"}), 500
+
+        url = f"{RAWG_BASE_URL}/games/{game_id}/screenshots"
+        params = {"key": RAWG_API_KEY}
+
+        response = requests.get(url, params=params, timeout=10)
+
+        if response.status_code != 200:
+            return jsonify({"error": "Failed to fetch screenshots"}), response.status_code
+
+        return jsonify(response.json()), 200
+
+    except Exception as e:
+        print(f"Retro screenshots error: {e}")
+        return jsonify({"error": str(e)}), 500
