@@ -86,13 +86,19 @@ export const RetroGames = () => {
         {filteredGames.length > 0 ? (
           filteredGames.map((vintageGames, index) => (
             <div key={index} className="col-6 col-md-4 col-lg-3 mb-4">
-              <GameCard
-                type={"vintageGames"}
-                name={vintageGames.name}
-                uid={vintageGames.id}
-                img={getCoverUrl(vintageGames)}
-                summary={vintageGames.summary}
-              />
+           <GameCard
+  type={"vintageGames"}
+  name={vintageGames.name}
+  uid={vintageGames.id}
+  img={
+    vintageGames.cover?.url
+      ? (vintageGames.cover.url.startsWith("http")
+          ? vintageGames.cover.url.replace("t_thumb", "t_cover_big")
+          : `https:${vintageGames.cover.url.replace("t_thumb", "t_cover_big")}`)
+      : "https://t3.ftcdn.net/jpg/04/60/01/36/360_F_460013622_6xF8uN6ubMvLx0tAJECBHfKPoNOR5cRa.jpg"
+  }
+  summary={vintageGames.summary}
+/>
             </div>
           ))
         ) : (
