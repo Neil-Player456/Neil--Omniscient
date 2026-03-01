@@ -7,7 +7,14 @@ export const Carousel = ({ games }) => {
   }
 
   const getImageSrc = (game) => {
-    return game.background_image || game.img || "https://t3.ftcdn.net/jpg/04/60/01/36/360_F_460013622_6xF8uN6ubMvLx0tAJECBHfKPoNOR5cRa.jpg";
+    let url = game.background_image || game.img;
+    if (!url) {
+      return "https://t3.ftcdn.net/jpg/04/60/01/36/360_F_460013622_6xF8uN6ubMvLx0tAJECBHfKPoNOR5cRa.jpg";
+    }
+    if (!url.startsWith("http")) {
+      url = `https:${url}`;
+    }
+    return url.replace("t_thumb", "t_cover_big");
   };
 
   return (

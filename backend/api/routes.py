@@ -313,7 +313,6 @@ def get_retro_game_detail(slug):
         return jsonify({"error": str(e)}), 500
 
 
-# Retro game screenshots endpoint
 @api.route('/retrogames/<int:game_id>/screenshots', methods=['GET'])
 def get_retro_game_screenshots(game_id):
     try:

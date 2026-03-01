@@ -4,7 +4,7 @@ import { GameCard } from "../components/GameCard.jsx";
 import projectimage1 from "../../img/projectimage1.png";
 
 export const RetroGames = () => {
-  const { store, dispatch, getVintageGames } = useGlobalReducer();
+  const { store, getVintageGames } = useGlobalReducer();
   const [retroGames, setRetroGames] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -21,6 +21,13 @@ export const RetroGames = () => {
   const filteredGames = retroGames.filter((game) =>
     game.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const getCoverUrl = (game) => {
+    if (!game.cover?.url) return "";
+    return game.cover.url.startsWith("http")
+      ? game.cover.url.replace("t_thumb", "t_cover_big")
+      : `https:${game.cover.url.replace("t_thumb", "t_cover_big")}`;
+  };
 
   return (
     <div
@@ -78,15 +85,12 @@ export const RetroGames = () => {
       <div className="row px-3">
         {filteredGames.length > 0 ? (
           filteredGames.map((vintageGames, index) => (
-            <div
-              key={index}
-              className="col-6 col-md-4 col-lg-3 mb-4"
-            >
+            <div key={index} className="col-6 col-md-4 col-lg-3 mb-4">
               <GameCard
                 type={"vintageGames"}
                 name={vintageGames.name}
                 uid={vintageGames.id}
-                img={vintageGames.cover?.url || ""}
+                img={getCoverUrl(vintageGames)}
                 summary={vintageGames.summary}
               />
             </div>
