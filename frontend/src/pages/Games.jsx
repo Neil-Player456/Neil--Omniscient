@@ -14,10 +14,9 @@ export const Games = () => {
 
   const observer = useRef();
 
-  // Helper function to get normalized backend URL
+
   const getBackendUrl = () => {
     let backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:3001/api';
-    // Ensure backendUrl ends with /api
     if (!backendUrl.endsWith('/api')) {
       backendUrl = backendUrl.endsWith('/') ? `${backendUrl}api` : `${backendUrl}/api`;
     }
@@ -41,7 +40,6 @@ export const Games = () => {
           if (pageNum === 1) {
             return data.results;
           }
-          // Deduplicate by id when appending
           const existingIds = new Set(prev.map(g => g.id));
           const newGames = data.results.filter(g => !existingIds.has(g.id));
           return [...prev, ...newGames];
@@ -94,7 +92,6 @@ export const Games = () => {
           if (page === 1) {
             return enriched;
           }
-          // Deduplicate by id when appending
           const existingIds = new Set(prev.map(g => g.id));
           const newEnriched = enriched.filter(g => !existingIds.has(g.id));
           return [...prev, ...newEnriched];
@@ -179,60 +176,59 @@ export const Games = () => {
         paddingTop: "4rem",
       }}
     >
-<div
-  style={{
-    position: "relative",
-    marginBottom: "2rem",
-    maxWidth: "1200px",
-    marginLeft: "auto",
-    marginRight: "auto",
-    width: "100%",
-    padding: "0 1rem",
-  }}
->
-  <h1
-    className="text-white"
-    style={{
-      fontWeight: "600",
-      fontSize: "2.5rem",
-      margin: 0,
-      textAlign: "center",
-      whiteSpace: "nowrap",
-      overflow: "hidden",
-      textOverflow: "ellipsis",
-    }}
-  >
-    A Selection of Modern Games
-  </h1>
+      <div
+        style={{
+          position: "relative",
+          marginBottom: "2rem",
+          maxWidth: "1200px",
+          marginLeft: "auto",
+          marginRight: "auto",
+          width: "100%",
+          padding: "0 1rem",
+        }}
+      >
+        <h1
+          className="text-white"
+          style={{
+            fontWeight: "600",
+            fontSize: "2.5rem",
+            margin: 0,
+            textAlign: "center",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
+          A Selection of Modern Games
+        </h1>
 
-  <input
-    type="text"
-    placeholder="Search games..."
-    className="form-control"
-    value={searchTerm}
-    onChange={(e) => setSearchTerm(e.target.value)}
-    style={{
-      position: "absolute",
-      top: "50%",
-      right: "-275px",
-      transform: "translateY(-50%)",
-      width: "250px",
-      minWidth: "150px",
-      padding: "0.4rem 0.75rem",
-      borderRadius: "20px",
-      border: "1px solid #ddd",
-      boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
-      fontSize: "1rem",
-      outline: "none",
-    }}
-  />
-</div>
+        <input
+          type="text"
+          placeholder="Search games..."
+          className="form-control"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{
+            position: "absolute",
+            top: "50%",
+            right: "-275px",
+            transform: "translateY(-50%)",
+            width: "250px",
+            minWidth: "150px",
+            padding: "0.4rem 0.75rem",
+            borderRadius: "20px",
+            border: "1px solid #ddd",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+            fontSize: "1rem",
+            outline: "none",
+          }}
+        />
+      </div>
 
 
       <div className="row w-100 px-3 px-md-5">
         {gamesWithDescriptions.map((rawgGame, index) => {
           const isLast = index === gamesWithDescriptions.length - 1;
-          // Use slug as key since it's unique, fallback to id-index combination
           const uniqueKey = rawgGame.slug || `${rawgGame.id}-${index}`;
           return (
             <div
@@ -253,7 +249,7 @@ export const Games = () => {
 
       {loading && <p className="text-white mt-3">Loading more games...</p>}
       {!hasMore && !loading && (
-        <p className="text-white mt-3">No more games to load.</p>
+        <p className="text-white mt-3">Loading... Please Wait.</p>
       )}
     </div>
   );
