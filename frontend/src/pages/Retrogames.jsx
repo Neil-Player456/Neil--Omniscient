@@ -15,19 +15,29 @@ export const RetroGames = () => {
   }, []);
 
   useEffect(() => {
-    setRetroGames(store.vintageGames);
+    const gamesWithImages = store.vintageGames.map((game) => {
+      let img = null;
+
+      if (game.cover?.url) {
+        img = game.cover.url.startsWith("http")
+          ? game.cover.url.replace("t_thumb", "t_cover_big")
+          : `https:${game.cover.url.replace("t_thumb", "t_cover_big")}`;
+      } else if (game.background_image) {
+        img = game.background_image;
+      }
+
+      return {
+        ...game,
+        img,
+      };
+    });
+
+    setRetroGames(gamesWithImages);
   }, [store.vintageGames]);
 
   const filteredGames = retroGames.filter((game) =>
     game.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  const getCoverUrl = (game) => {
-    if (!game.cover?.url) return "";
-    return game.cover.url.startsWith("http")
-      ? game.cover.url.replace("t_thumb", "t_cover_big")
-      : `https:${game.cover.url.replace("t_thumb", "t_cover_big")}`;
-  };
 
   return (
     <div
@@ -84,25 +94,19 @@ export const RetroGames = () => {
 
       <div className="row px-3">
         {filteredGames.length > 0 ? (
-          filteredGames.map((vintageGames, index) => (
+          filteredGames.map((game, index) => (
             <div key={index} className="col-6 col-md-4 col-lg-3 mb-4">
-           <GameCard
-  type={"vintageGames"}
-  name={vintageGames.name}
-  uid={vintageGames.id}
-  img={
-    vintageGames.cover?.url
-      ? (vintageGames.cover.url.startsWith("http")
-          ? vintageGames.cover.url.replace("t_thumb", "t_cover_big")
-          : `https:${vintageGames.cover.url.replace("t_thumb", "t_cover_big")}`)
-      : "https://t3.ftcdn.net/jpg/04/60/01/36/360_F_460013622_6xF8uN6ubMvLx0tAJECBHfKPoNOR5cRa.jpg"
-  }
-  summary={vintageGames.summary}
-/>
+              <GameCard
+                type={"vintageGames"}
+                name={game.name}
+                uid={game.id}
+                img={game.img || ""}
+                summary={game.summary}
+              />
             </div>
           ))
         ) : (
-          <p className="text-white">No retro games found.</p>
+          <p className="text-white">Loading Retro Games...Please Wait.</p>
         )}
       </div>
     </div>
