@@ -17,7 +17,19 @@ export const GameCard = (props) => {
   useEffect(() => { localStorage.setItem(dislikesKey, dislikes); }, [dislikes, dislikesKey]);
 
   const getImageSrc = () => {
-    return props.background_image || props.img || "https://t3.ftcdn.net/jpg/04/60/01/36/360_F_460013622_6xF8uN6ubMvLx0tAJECBHfKPoNOR5cRa.jpg";
+    let imageUrl = "";
+
+    if (props.cover?.url) {
+      imageUrl = props.cover.url.startsWith("http")
+        ? props.cover.url.replace("t_thumb", "t_cover_big")
+        : `https:${props.cover.url.replace("t_thumb", "t_cover_big")}`;
+    } else if (props.background_image) {
+      imageUrl = props.background_image;
+    } else if (props.img) {
+      imageUrl = props.img;
+    }
+
+    return imageUrl || "https://t3.ftcdn.net/jpg/04/60/01/36/360_F_460013622_6xF8uN6ubMvLx0tAJECBHfKPoNOR5cRa.jpg";
   };
 
   const handleSaveForLater = async () => {
