@@ -7,15 +7,10 @@ export const Carousel = ({ games }) => {
   }
 
   const getImageSrc = (game) => {
-    if (game.cover?.url) {
-      return game.cover.url.startsWith("http")
-        ? game.cover.url.replace("t_thumb", "t_screenshot_med")
-        : `https:${game.cover.url.replace("t_thumb", "t_screenshot_med")}`;
-    }
-
-    if (game.background_image) return game.background_image;
-
-    return "https://t3.ftcdn.net/jpg/04/60/01/36/360_F_460013622_6xF8uN6ubMvLx0tAJECBHfKPoNOR5cRa.jpg";
+    return (
+      game.img ||
+      "https://t3.ftcdn.net/jpg/04/60/01/36/360_F_460013622_6xF8uN6ubMvLx0tAJECBHfKPoNOR5cRa.jpg"
+    );
   };
 
   return (
