@@ -7,27 +7,12 @@ export const Carousel = ({ games }) => {
   }
 
   const getImageSrc = (game) => {
-    return (
-      game.img ||
-      "https://t3.ftcdn.net/jpg/04/60/01/36/360_F_460013622_6xF8uN6ubMvLx0tAJECBHfKPoNOR5cRa.jpg"
-    );
+    return game.background_image || game.img || "https://t3.ftcdn.net/jpg/04/60/01/36/360_F_460013622_6xF8uN6ubMvLx0tAJECBHfKPoNOR5cRa.jpg";
   };
 
   return (
-    <div
-      className="card mb-3"
-      style={{
-        minWidth: "18rem",
-        backgroundColor: "transparent",
-        border: "none",
-      }}
-    >
-      <div
-        id="carouselExampleIndicators"
-        className="carousel slide"
-        data-bs-ride="carousel"
-        data-bs-interval="3000"
-      >
+    <div className="card mb-3" style={{ minWidth: "18rem", backgroundColor: "transparent", border: "none" }}>
+      <div id="carouselExampleIndicators" className="carousel slide" data-bs-ride="carousel" data-bs-interval="3000">
         <div className="carousel-indicators">
           {games.map((game, index) => (
             <button
@@ -44,14 +29,8 @@ export const Carousel = ({ games }) => {
 
         <div className="carousel-inner">
           {games.map((game, index) => (
-            <div
-              key={game.uid || game.id || index}
-              className={`carousel-item ${index === 0 ? "active" : ""}`}
-            >
-              <Link
-                to={`/retrogame/${game.uid || game.id || index}`}
-                className="text-decoration-none"
-              >
+            <div key={game.uid || game.id || index} className={`carousel-item ${index === 0 ? "active" : ""}`}>
+              <Link to={`/retrogame/${game.uid || game.id || index}`} className="text-decoration-none">
                 <img
                   src={getImageSrc(game)}
                   alt={game.name || "Game Image"}
@@ -63,7 +42,6 @@ export const Carousel = ({ games }) => {
                   className="d-block w-100"
                   style={{ height: "400px", objectFit: "cover" }}
                 />
-
                 <div className="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-2">
                   <h5>{game.name}</h5>
                 </div>
@@ -72,22 +50,12 @@ export const Carousel = ({ games }) => {
           ))}
         </div>
 
-        <button
-          className="carousel-control-prev"
-          type="button"
-          data-bs-target="#carouselExampleIndicators"
-          data-bs-slide="prev"
-        >
+        <button className="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
           <span className="carousel-control-prev-icon" aria-hidden="true"></span>
           <span className="visually-hidden">Previous</span>
         </button>
 
-        <button
-          className="carousel-control-next"
-          type="button"
-          data-bs-target="#carouselExampleIndicators"
-          data-bs-slide="next"
-        >
+        <button className="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
           <span className="carousel-control-next-icon" aria-hidden="true"></span>
           <span className="visually-hidden">Next</span>
         </button>

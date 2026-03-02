@@ -9,30 +9,25 @@ export const RetroGames = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    if (store.vintageGames.length === 0) {
-      getVintageGames();
-    }
-  }, []);
-
-  useEffect(() => {
-    const gamesWithImages = store.vintageGames.map((game) => {
-      let img = null;
+    const normalizedGames = store.vintageGames.map((game) => {
+      let imageUrl = "";
 
       if (game.cover?.url) {
-        img = game.cover.url.startsWith("http")
+        imageUrl = game.cover.url.startsWith("http")
           ? game.cover.url.replace("t_thumb", "t_cover_big")
           : `https:${game.cover.url.replace("t_thumb", "t_cover_big")}`;
       } else if (game.background_image) {
-        img = game.background_image;
+        imageUrl = game.background_image;
       }
 
       return {
         ...game,
-        img,
+        img: imageUrl,
+        background_image: imageUrl,
       };
     });
 
-    setRetroGames(gamesWithImages);
+    setRetroGames(normalizedGames);
   }, [store.vintageGames]);
 
   const filteredGames = retroGames.filter((game) =>
@@ -54,20 +49,9 @@ export const RetroGames = () => {
     >
       <div
         className="position-relative d-flex align-items-center justify-content-center"
-        style={{
-          minHeight: "120px",
-          padding: "20px",
-          marginBottom: "20px",
-        }}
+        style={{ minHeight: "120px", padding: "20px", marginBottom: "20px" }}
       >
-        <h1
-          className="text-white w-100"
-          style={{
-            textAlign: "center",
-            margin: 0,
-            fontWeight: "bold",
-          }}
-        >
+        <h1 className="text-white w-100" style={{ textAlign: "center", margin: 0, fontWeight: "bold" }}>
           A Wide Selection of Retro Games
         </h1>
 
@@ -106,7 +90,7 @@ export const RetroGames = () => {
             </div>
           ))
         ) : (
-          <p className="text-white">Loading Retro Games...Please Wait.</p>
+          <p className="text-white">No retro games found.</p>
         )}
       </div>
     </div>
